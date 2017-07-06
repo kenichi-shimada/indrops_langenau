@@ -1,4 +1,4 @@
-## The project YAML files used for this project are indrops_v2.yaml and indrops_v3.yaml
+## The project YAML files used for this project are test/indrops_v2.yaml and test/indrops_v3.yaml
 
 ## Project YAML file.
 
