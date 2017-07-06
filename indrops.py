@@ -389,7 +389,8 @@ class IndropsProject():
         gtf_prefix = '.'.join(gtf_filename.split('.')[:-2])
         gtf_with_genenames_in_transcript_id = gtf_prefix + '.annotated.gtf'
 
-        accepted_gene_biotypes_for_NA_transcripts = set(["protein_coding","IG_V_gene","IG_J_gene","TR_J_gene","TR_D_gene","TR_V_gene","IG_C_gene","IG_D_gene","TR_C_gene"])
+#        accepted_gene_biotypes_for_NA_transcripts = set(["protein_coding","IG_V_gene","IG_J_gene","TR_J_gene","TR_D_gene","TR_V_gene","IG_C_gene","IG_D_gene","TR_C_gene"])
+        accepted_gene_biotypes_for_NA_transcripts = set(["protein_coding","IG_V_gene","IG_J_gene","IG_C_pseudogene","IG_J_pseudogene","IG_pseudogene","IG_V_pseudogene","lincRNA","processed_transcript","TR_J_gene","TR_D_gene","TR_V_gene","IG_C_gene","IG_D_gene","TR_C_gene"])
         tsl1_or_tsl2_strings = ['transcript_support_level "1"', 'transcript_support_level "1 ', 'transcript_support_level "2"', 'transcript_support_level "2 ']
         tsl_NA =  'transcript_support_level "NA'
 
@@ -400,16 +401,14 @@ class IndropsProject():
                 continue
 
             line_valid_for_output = False
-            for string in tsl1_or_tsl2_strings:
-                if string in line:
-                    line_valid_for_output = True
-                    break
+#            for string in tsl1_or_tsl2_strings:
+#                if string in line:
+#                    line_valid_for_output = True
+#                    break
             
-            if tsl_NA in line:
-                gene_biotype = re.search(r'gene_biotype \"(.*?)\";', line)
-                if gene_biotype and gene_biotype.group(1) in accepted_gene_biotypes_for_NA_transcripts:
-                    line_valid_for_output = True
-
+            gene_biotype = re.search(r'gene_biotype \"(.*?)\";', line)
+            if gene_biotype and gene_biotype.group(1) in accepted_gene_biotypes_for_NA_transcripts:
+                line_valid_for_output = True
             if line_valid_for_output:
                 gene_name = re.search(r'gene_name \"(.*?)\";', line)
                 if gene_name:
@@ -423,10 +422,13 @@ class IndropsProject():
         if p_gzip.wait() != 0:
             raise Exception(" Error in rsem-prepare reference ")
 
-        p_rsem = subprocess.Popen([self.paths.rsem_prepare_reference, '--bowtie', '--bowtie-path', self.paths.bowtie_dir,
+#        p_rsem = subprocess.Popen([self.paths.rsem_prepare_reference, '--bowtie', '--bowtie-path', self.paths.bowtie_dir,
+#                            '--gtf', gtf_with_genenames_in_transcript_id, 
+#                            '--polyA', '--polyA-length', '5', genome_filename, self.paths.bowtie_index])
+	# Above code errors out with rsem 1.2.4. Made the following changes: removed --bowtie and --polyA
+        p_rsem = subprocess.Popen([self.paths.rsem_prepare_reference,  '--bowtie-path', self.paths.bowtie_dir,
                             '--gtf', gtf_with_genenames_in_transcript_id, 
-                            '--polyA', '--polyA-length', '5', genome_filename, self.paths.bowtie_index])
-
+                            '--polyA-length', '5', genome_filename, self.paths.bowtie_index])
         if p_rsem.wait() != 0:
             raise Exception(" Error in rsem-prepare reference ")
 
@@ -481,7 +483,7 @@ class IndropsLibrary():
     def sorted_barcode_names(self, min_reads=0):
         return [name for bc,(name,abun) in sorted(self.abundant_barcodes.items(), key=lambda i:-i[1][1]) if abun>min_reads]
 
-    def identify_abundant_barcodes(self, make_histogram=True, absolute_min_reads=250):
+    def identify_abundant_barcodes(self, make_histogram=True, absolute_min_reads=10000):
         """
         Identify which barcodes are above the absolute minimal abundance, 
         and make a histogram summarizing the barcode distribution
@@ -490,7 +492,6 @@ class IndropsLibrary():
         for k, v in self.barcode_counts.items():
             if v > absolute_min_reads:
                 keep_barcodes.append(k)
-
         abundant_barcodes = {}
         print_to_stderr(" %d barcodes above absolute minimum threshold" % len(keep_barcodes))
         for bc in keep_barcodes:
@@ -503,7 +504,7 @@ class IndropsLibrary():
         # Create table about the filtering process
         with open(self.paths.filtering_statistics_filename, 'w') as filtering_stats:
 
-            header = ['Run', 'Part', 'Input Reads', 'Valid Structure', 'Surviving Trimmomatic', 'Surviving polyA trim and complexity filter']
+            header = ['Run', 'Part', 'Valid Structure', 'Surviving Trimmomatic', 'Surviving polyA trim and complexity filter']
 
             if self.version == 'v1' or self.version == 'v2':
                 structure_parts = ['W1_in_R2', 'empty_read',  'No_W1', 'No_polyT', 'BC1', 'BC2', 'Umi_error']
@@ -523,7 +524,8 @@ class IndropsLibrary():
             for part in self.parts:
                 with open(part.filtering_metrics_filename) as f:
                     part_stats = yaml.load(f)
-                    line = [part.run_name, part.part_name, part_stats['read_structure']['Total'], part_stats['read_structure']['Valid'], part_stats['trimmomatic']['output'], part_stats['complexity_filter']['output']]
+#                    line = [part.run_name, part.part_name, part_stats['read_structure']['Total'], part_stats['read_structure']['Valid'], part_stats['trimmomatic']['output'], part_stats['complexity_filter']['output']]
+                    line = [part.run_name, part.part_name, part_stats['read_structure']['Valid'], part_stats['trimmomatic']['output'], part_stats['complexity_filter']['output']]
                     line += [part_stats['read_structure'][k] for k in structure_parts]
                     line += [part_stats['trimmomatic'][k] for k in trimmomatic_parts]
                     line += [part_stats['complexity_filter'][k] for k in complexity_filter_parts]
@@ -532,7 +534,10 @@ class IndropsLibrary():
 
         print_to_stderr("Created Library filtering summary:")
         print_to_stderr("  " + self.paths.filtering_statistics_filename)
- 
+	tot_reads = 0
+	for bc, count in self.barcode_counts.items():
+		tot_reads += count
+	print tot_reads 
         # Make the histogram figure
         if not make_histogram:
             return
@@ -555,6 +560,7 @@ class IndropsLibrary():
         ax.set_xlabel('Reads per barcode')
         ax.set_ylabel('#reads coming from bin')
         plt.savefig(self.paths.barcode_abundance_histogram_filename)
+	plt.close()
 
         print_to_stderr("Created Barcode Abundance Histogram at:")
         print_to_stderr("  " + self.paths.barcode_abundance_histogram_filename)
@@ -1105,10 +1111,10 @@ class LibrarySequencingPart():
                 '--min-post-trim-length', self.project.parameters['trimmomatic_arguments']['MINLEN'],
                 '--max-low-complexity-fraction', str(self.project.parameters['low_complexity_filter_arguments']['max_low_complexity_fraction']),
                 ]
+	    print low_complexity_filter_cmd
             counter_cmd = [self.project.paths.python,  self.project.paths.count_barcode_distribution_py]
-
             p2 = subprocess.Popen(low_complexity_filter_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            p3 = subprocess.Popen(counter_cmd, stdin=p2.stdout, stdout=filtered_fastq_file, stderr=filtered_index_file)
+            p3 =  subprocess.Popen(counter_cmd, stdin=p2.stdout, stdout=filtered_fastq_file, stderr=filtered_index_file)
 
             with FIFO(dir=filtered_dir) as fifo1:
 
@@ -1118,7 +1124,7 @@ class LibrarySequencingPart():
                     trimmomatic_cmd.append('%s:%s' % (arg, val))
 
                 p1 = subprocess.Popen(trimmomatic_cmd, stderr=subprocess.PIPE)
-
+		print trimmomatic_cmd
                 fifo1_filehandle = open(fifo1.filename, 'w')
                 yield fifo1_filehandle
                 fifo1_filehandle.close()
@@ -1134,7 +1140,7 @@ class LibrarySequencingPart():
             p2.wait()
             p3.wait()
 
-
+	print self.filtering_statistics_counter
         filtering_metrics = {
             'read_structure' : dict(self.filtering_statistics_counter),
             'trimmomatic' : trimmomatic_metrics,
