@@ -1,23 +1,23 @@
-project_name : "RL_inDrop"
-project_dir : "/data/langenau/indrops_out/RL_inDrop"
+project_name : "projectName_v2"
+project_dir : "/path/to/project/dir"
 sequencing_runs : 
-  - name : "RL_indrop"
+  - name : "projectName"
     version : 'v2'
-    dir : "/data/langenau/RL_inDrop_fastq_all/"
+    dir : "/path/to/fastq/file/"
     fastq_path : "{library_prefix}_{split_affix}_{read}_001.fastq.gz"
     split_affixes : ["L001", "L002","L003", "L004"]
     libraries :
-      - {library_name: "WT_1", library_prefix: "Zebrafish-WT1_S3"}
-      - {library_name: "WT_2", library_prefix: "Zebrafish-WT2_S4"}
-      - {library_name: "PRKDC_1", library_prefix: "Zebrafish-Mut1_S1"}
-      - {library_name: "PRKDC_2", library_prefix: "Zebrafish-PRKDC2_S2"}
+      - {library_name: "WT_1", library_prefix: "fastq_prefix_WT1"}
+      - {library_name: "WT_2", library_prefix: "fastq_prefix_WT2"}
+      - {library_name: "PRKDC_1", library_prefix: "fastq_prefix_PRKDC_1"}
+      - {library_name: "PRKDC_2", library_prefix: "fastq_prefix_PRKDC_2"}
 paths : 
-  bowtie_dir : "/apps/source/bowtie-1.0.0/"
-  bowtie_index : "/data/langenau/indrops_indexdir/Danio_rerio.GRCz10.dna_sm.fa.quoted_genenames.bowtie_index"
-  python_dir : "/PHShome/si992/packages/miniconda2/bin/"
-  samtools_dir : "/PHShome/si992/packages/samtools-1.3.1/"
-  rsem_dir : "/apps/source/rsem/1.2.4/"
-  java_dir : "/source/jdk/1.8.0/bin/"
+  bowtie_dir : "/path/to/bowtie1.0/"
+  bowtie_index : "/path/to/bowtie_transcriptome_index"
+  python_dir : "/path/to/python/"
+  samtools_dir : "/path/to/samtools/"
+  rsem_dir : "/path/to/rsem/"
+  java_dir : "/path/to/jdk1.8/"
 parameters : # OPTIONAL PARAMETERS
 #   umi_quantification_arguments:
 #     m : 10 #Ignore reads with more than M alignments, after filtering on distance from transcript end.
