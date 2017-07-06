@@ -1,4 +1,4 @@
-project_name : "RL_inDrop"
+project_name : "projectName"
 project_dir : "/path/to/project/dir"
 sequencing_runs : 
   - name : "projectName"
