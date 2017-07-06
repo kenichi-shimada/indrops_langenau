@@ -27,12 +27,13 @@ sequencing_runs :
     libraries : 
       - {library_name: "test_lib3", library_index: "ATAGAG"}
       - {library_name: "test_lib4", library_index: "AGAGGA"}
-paths : 
-  bowtie_index : "/Users/averes/Projects/Melton/grch38_test/Homo_sapiens.GRCh38.85.annotated"
-  python_dir : "/Users/averes/miniconda3/envs/py27/bin/"
-  samtools_dir : "/Users/averes/software/samtools-1.3.1/bin/"
-  rsem_dir : ""
-  java_dir : ""
+paths :
+  bowtie_dir : "/apps/source/bowtie-1.0.0/"
+  bowtie_index : "/data/langenau/Danio_rerio.GRCz10.dna_sm.fa.bowtie_index"
+  python_dir : "/PHShome/si992/packages/miniconda2/bin/"
+  samtools_dir : "/source/samtools/1.1/bin/"
+  rsem_dir : "/apps/source/rsem/1.2.4/"
+  java_dir : "/source/jdk/1.8.0/bin"
 parameters : # OPTIONAL PARAMETERS
 #   umi_quantification_arguments:
 #     m : 10 #Ignore reads with more than M alignments, after filtering on distance from transcript end.
