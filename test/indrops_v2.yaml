@@ -1,4 +1,4 @@
-project_name : "projectName"
+project_name : "projectName_v2"
 project_dir : "/path/to/project/dir"
 sequencing_runs : 
   - name : "projectName"
