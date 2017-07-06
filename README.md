@@ -1,3 +1,5 @@
+## The project YAML files used for this project are indrops_v2.yaml and indrops_v3.yaml
+
 ## Project YAML file.
 
 An inDrops project is composed of a series of sequencing runs, each including one (or several) indrops libraries within it. A sequencing run can further be split into several parts (effectively arbitrary chunks) to parallelize the analysis. Give example of a chunk
